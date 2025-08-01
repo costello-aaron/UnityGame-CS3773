@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/StartScreen.unity
+    guid: 288b9d3d938438d4499ab54721ae431c
+  - enabled: 1
+    path: Assets/Scenes/Map.unity
+    guid: 23984d06a01356848bb1cb2f671d34ec
+  - enabled: 1
+    path: Assets/Scenes/The Alamo.unity
+    guid: c1e7ff5a0c810704096b6797c5db9a2e
+  - enabled: 1
+    path: Assets/Scenes/Enchanted Rock.unity
+    guid: cef53749cb917814ea5db49e780760c3
+  - enabled: 1
+    path: Assets/Scenes/Texas Capitol.unity
+    guid: 3693b46d3dfe0c64ea98c49456cc9f33
+  - enabled: 1
+    path: Assets/Scenes/TestingScene.unity
+    guid: 99c9720ab356a0642a771bea13969a05
+  m_configObjects:
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_UseUCBPForAssetBundles: 0
