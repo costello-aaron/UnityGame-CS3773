@@ -7,10 +7,15 @@ public class UIManager : MonoBehaviour
 {
     [SerializeField] private Canvas mainCanvas; 
     [SerializeField] private TextMeshProUGUI eventText;
-    [SerializeField] private GameObject panel; 
+    [SerializeField] private GameObject panel;
+    [SerializeField] private TextMeshProUGUI panelTitle;
+    [SerializeField] private TextMeshProUGUI panelText;
+    [SerializeField] private Image panelImage;
+    public GameObject UIPause;
 
     private static UIManager instance;
-    bool mutex = false; // Mutex to prevent multiple coroutines from running simultaneously
+    public bool gamePaused=false;
+    public bool mutex = false; // Mutex to prevent multiple coroutines from running simultaneously
 
     private void Awake()
     {
@@ -24,28 +29,56 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if(!gamePaused && mutex)// if the game is not paused and something is being displayed
+            {
+                HidePanel();
+            }else
+            {
+                gamePaused = togglePause(gamePaused);
+            }
+
+            
+        }
+    }
+
+    bool togglePause(bool val){
+        if (mutex && !val) return false; //don't show multiple ui elements at once
+        if (val == true)
+        {
+            Cursor.visible = false; 
+            Cursor.lockState = CursorLockMode.Locked; // lock the cursor
+            mutex = false;
+            Debug.Log("UnPausing Game");
+            UIPause.SetActive(false);
+            Time.timeScale = 1;
+            return false;
+        }
+        else
+        {
+            Cursor.visible = true; // Show the cursor when paused
+            Cursor.lockState = CursorLockMode.None; // Unlock the cursor
+            mutex = true;
+            Debug.Log("Pausing Game");
+            UIPause.SetActive(true);
+            Time.timeScale = 0;
+            return true;
+        }
+    }
+
     public static UIManager GetInstance()
     {
         return instance;
     }
 
-    public IEnumerator DisplayEventText(string text, int duration)
+    public void DisplayEventText(string text)
     {
-        if (!mutex) mutex = true;
-        else
-        {
-            Debug.LogWarning("Coroutine already running, skipping new event text display.");
-            yield break; // Exit if a coroutine is already running
-        }
-
         if (eventText != null)
         {
             eventText.text = text;
-            eventText.gameObject.SetActive(true);
-            yield return new WaitForSeconds(duration);
-            eventText.gameObject.SetActive(false);
-            eventText.text = ""; // Clear the text after displaying
-            mutex = false;
         }
         else
         {
@@ -53,14 +86,39 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void ShowPanel(string text, Image img = null)
+    public void ShowPanel(string title, string text, Sprite img = null)
     {
+        if (mutex) return; //don't show multiple UI elements at once
+        mutex = true;
         if (panel != null)
         {
             panel.SetActive(true);
+            panelTitle.text = title;
+            panelText.text = text;
+            if (img != null)
+            {
+                panelImage.sprite = img; // Set the image if provided
+            }
+            else
+            {
+                panelImage.gameObject.SetActive(false); // Hide the image if not provided
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Panel is not assigned in the UIManager.");
+        }
+    }
 
-            //put text
-            //check if image is not null, display it if so
+    private void HidePanel()
+    {
+        if (panel != null)
+        {
+            panel.SetActive(false);
+            panelTitle.text = "";
+            panelText.text = "";
+            panelImage.sprite = null;
+            mutex = false;
         }
         else
         {

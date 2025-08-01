@@ -1,13 +1,30 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class MapItem : MonoBehaviour
 {
-    public int SceneIndex;
-    public string Tooltip;
-    public bool Visted;
+    [SerializeField] private int sceneIndex;
+    [SerializeField] private bool visited;
+    [SerializeField] private GameObject button;
+    [SerializeField] private string label;
+    [SerializeField] private Sprite icon;
+    [TextArea(3, 10)] public string description;
 
-    public TextMeshProUGUI infoText;
+    private void Start()
+    {
+        button.GetComponentInChildren<TextMeshProUGUI>().text = label;
+        visited = PlayerPrefs.GetInt(sceneIndex.ToString(), 0) == 1; // Load visited state from PlayerPrefs
+    }
+    public void OnMouseEnter()
+    {
+        button.SetActive(true); 
+    }
+
+    public void OnMouseExit()
+    {
+        button.SetActive(false);
+    }
 
     public void ChangeScene()
     {
@@ -15,7 +32,7 @@ public class MapItem : MonoBehaviour
 
         if (sceneManager != null)
         {
-            sceneManager.LoadScene(SceneIndex);
+            sceneManager.LoadScene(sceneIndex);
         }
 
         else
@@ -26,14 +43,10 @@ public class MapItem : MonoBehaviour
 
     public void DisplayInfo()
     {
-        if (infoText != null)
-        {
-            infoText.text = Tooltip;
-        }
-
-        else
-        {
-            Debug.Log("No UI Text assigned");
-        }
+        UIManager.GetInstance().ShowPanel(label, description, icon);
+        Button button = GameObject.Find("Visit").GetComponent<Button>();
+        Debug.Log(button);
+        button.onClick.RemoveAllListeners(); // Clear previous listeners to avoid multiple calls
+        button.onClick.AddListener(() => ChangeScene());
     }
 }

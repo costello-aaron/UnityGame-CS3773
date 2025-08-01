@@ -3,13 +3,16 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
-    CharacterController cc;
-    Rigidbody rb;
+    private CharacterController cc;
+    private Rigidbody rb;
+    private int speed = 5;
+    private UIManager UImanager;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         cc = GetComponent<CharacterController>();
         rb = GetComponent<Rigidbody>();
+        UImanager = UIManager.GetInstance();
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked; // Lock the cursor to the center of the screen
     }
@@ -36,7 +39,17 @@ public class PlayerController : MonoBehaviour
         }
 
         input.y = vertical; // apply gravity to input
-        Vector3 move = transform.TransformDirection(input) * 5f * Time.deltaTime;
+     
+        //sprint
+        if(Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            speed = 10;
+        }
+        else if(Input.GetKeyUp(KeyCode.LeftShift))
+        {
+            speed = 5;
+        }
+        Vector3 move = transform.TransformDirection(input) * speed * Time.deltaTime;
         cc.Move(move);
 
         
@@ -46,33 +59,41 @@ public class PlayerController : MonoBehaviour
         float mouseY = Input.GetAxis("Mouse Y");
         mouseX = Mathf.Clamp(mouseX, -89, 89);
 
-        transform.eulerAngles = new Vector3(0, transform.eulerAngles.y + mouseX, 0);
+        
         Camera cam = Camera.main;
-        if (cam != null)
+        if (cam != null && Time.deltaTime > 0)//dont look if paused
         {
+            transform.eulerAngles = new Vector3(0, transform.eulerAngles.y + mouseX, 0);
             cam.transform.eulerAngles = new Vector3(cam.transform.eulerAngles.x - mouseY, cam.transform.eulerAngles.y, 0);
         }
 
-        if(Input.GetKeyDown(KeyCode.Mouse0))
-        {
-            Interact();
-        }
-    }
-
-    private void Interact()
-    {
         RaycastHit hit;
-        if(Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, 5))
+        Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, 5);
+        if(hit.collider != null && hit.collider.tag == "Interactable")
         {
-            if( hit.collider.gameObject.GetComponent<Interactable>() != null)
+            UImanager.DisplayEventText("Press Left Mouse to Interact!");
+            if (Input.GetKeyDown(KeyCode.Mouse0))
             {
-                Debug.Log(hit.collider.gameObject.GetComponent<Interactable>().description);
-                //talk to UI manager most likely
-                UIManager uiManager = UIManager.GetInstance();
-                
-                StartCoroutine(uiManager.DisplayEventText(hit.collider.gameObject.GetComponent<Interactable>().description, 3));
-                
+                Interact(hit);
             }
         }
+        else
+        {
+            UImanager.DisplayEventText("");
+        }
+       
+    }
+
+    public void Interact(RaycastHit hit)
+    {
+        if( hit.collider.gameObject.GetComponent<Interactable>() != null)
+        {
+
+            Interactable interactable = hit.collider.gameObject.GetComponent<Interactable>();
+            interactable.OnInteract();
+                
+                
+        }
+        
     }
 }
